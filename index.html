@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f8f9fa" />
+<title>Daily — Routine & Fitness</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f9fa;--ink:#121316;--muted:#777985;--line:#e9e9ee;--amber:#ffcf73;--blue:#bfdbfe;--pink:#ffb8eb;--lav:#c5c4f7;--card:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
+body.dark{--bg:#15161a;--ink:#f7f7fb;--muted:#a3a4b0;--line:#303139;--card:#202127}
+.card{border-radius:26px;overflow:hidden}.surface{background:var(--card);border:1px solid var(--line)}.muted{color:var(--muted)}
+.btn{transition:transform .16s ease,opacity .16s ease}.btn:active{transform:scale(.96)}.dock{box-shadow:0 12px 40px #1213162b}
+.day-pill{min-width:54px;transition:all .18s ease}.day-pill.active{background:#121316;color:white;box-shadow:0 8px 20px #12131625}.day-pill.active .day-muted{color:#c8c8ce}
+.plan-card{min-height:195px;position:relative;transition:transform .18s ease,box-shadow .18s ease}.plan-card:active{transform:scale(.985)}.plan-card.tall{min-height:390px}
+.clay{box-shadow:inset 0 2px 1px #ffffff90,inset 0 -4px 0 #00000008,0 10px 24px #34334b0b}
+.modal-backdrop{background:#10111670;backdrop-filter:blur(7px)}.sheet{animation:rise .24s ease-out;max-height:min(88dvh,820px);overflow:auto}
+@keyframes rise{from{transform:translateY(18px);opacity:.7}to{transform:translateY(0);opacity:1}}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.pop{animation:pop .3s ease}.check-circle{width:26px;height:26px;border:1.5px solid #12131665;border-radius:50%;display:grid;place-items:center;background:#ffffff50}
+.done .check-circle{background:#121316;color:#fff;border-color:#121316}.done .routine-title{text-decoration:line-through;opacity:.6}
+.progress-track{height:7px;border-radius:9px;background:#00000012;overflow:hidden}.progress-fill{height:100%;border-radius:9px;background:#121316;transition:width .3s}
+input,select,textarea{font:inherit}input:focus,select:focus,textarea:focus{outline:2px solid #a5a3ff;outline-offset:1px}
+.toast{animation:rise .2s ease-out}.safe-bottom{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+@media(min-width:700px){.main-wrap{max-width:1000px;margin:auto}.plan-grid{grid-template-columns:1fr 1fr}.dock{max-width:440px}}
+@media(max-width:380px){.day-pill{min-width:46px}.card{border-radius:22px}.plan-card.tall{min-height:350px}}
+</style>
+</head>
+<body>
+<div id="app" class="min-h-screen pb-32">
+  <main class="main-wrap px-4 pt-5 sm:px-6 sm:pt-8">
+    <header class="flex items-center justify-between gap-3 mb-6">
+      <button id="profileQuick" class="flex items-center gap-3 text-left btn min-w-0" aria-label="Edit profile">
+        <div id="avatar" class="w-12 h-12 rounded-2xl bg-[#e7e4ff] grid place-items-center text-xl overflow-hidden shrink-0">🧑🏻</div>
+        <div class="min-w-0"><p class="text-sm muted" id="greeting">Good evening,</p><div class="font-extrabold text-lg leading-tight truncate" id="userNameHead">Alex Morgan</div><p class="text-xs muted mt-1" id="todayLabel">Today · 18 Oct</p></div>
+      </button>
+      <div class="flex gap-2 shrink-0">
+        <button id="searchOpen" class="w-11 h-11 rounded-2xl surface grid place-items-center btn" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
+        <button id="headerAdd" class="w-11 h-11 rounded-2xl bg-[#121316] text-white grid place-items-center btn" aria-label="Add routine"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+    </header>
+
+    <section id="challengeCard" class="card clay bg-[#c5c4f7] p-5 sm:p-6 mb-7 cursor-pointer relative" role="button" tabindex="0" aria-label="Daily challenge settings">
+      <div class="flex justify-between gap-4 items-start">
+        <div class="relative z-10 max-w-[75%]">
+          <div class="inline-flex items-center gap-1.5 text-xs font-bold bg-white/55 px-3 py-1.5 rounded-full mb-3"><span>✦</span> DAILY CHALLENGE</div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight" id="challengeTitle">Move your body</h2>
+          <p class="text-sm mt-2 opacity-75 leading-relaxed" id="challengeSubtitle">Complete a workout before 09:00 AM</p>
+          <div class="flex items-center gap-3 mt-5">
+            <button id="challengeCheck" class="bg-[#121316] text-white rounded-full px-4 py-2.5 text-sm font-bold btn">Mark complete <span class="ml-1">↗</span></button>
+            <span id="streakBadge" class="text-xs font-extrabold bg-white/50 rounded-full px-3 py-2">🔥 5-day streak</span>
+          </div>
+        </div>
+        <div class="challenge-art absolute right-3 top-5 sm:right-7 sm:top-7 w-24 h-24 sm:w-32 sm:h-32" aria-hidden="true">
+          <div class="absolute inset-2 rounded-[32px] bg-[#a5a2f1] rotate-12"></div>
+          <div class="absolute inset-4 rounded-[28px] bg-[#f5f3ff] -rotate-6 grid place-items-center text-5xl sm:text-6xl shadow-inner">🏃🏻‍♀️</div>
+          <div class="absolute right-0 top-0 text-2xl">✦</div>
+        </div>
+      </div>
+      <div class="mt-5 flex items-center justify-between gap-3">
+        <div class="flex -space-x-2"><span class="w-8 h-8 rounded-full border-2 border-[#c5c4f7] bg-[#ffe0c4] grid place-items-center text-sm">👩🏻</span><span class="w-8 h-8 rounded-full border-2 border-[#c5c4f7] bg-[#d4edff] grid place-items-center text-sm">🧑🏽</span><span class="w-8 h-8 rounded-full border-2 border-[#c5c4f7] bg-[#fbd5eb] grid place-items-center text-sm">👨🏻</span><span class="w-8 h-8 rounded-full border-2 border-[#c5c4f7] bg-white grid place-items-center text-[10px] font-bold">+8</span></div>
+        <button id="challengeEdit" class="text-xs font-bold underline underline-offset-4 relative z-10">Customize challenge</button>
+      </div>
+    </section>
+
+    <section class="mb-7">
+      <div class="flex items-center justify-between mb-4"><h2 class="text-xl font-extrabold tracking-tight">This week</h2><button id="jumpToday" class="text-xs font-bold muted btn">Today ↗</button></div>
+      <div id="calendarStrip" class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1" aria-label="Choose a day"></div>
+    </section>
+
+    <section id="homeView">
+      <div class="flex items-center justify-between mb-4">
+        <div><h2 class="text-xl font-extrabold tracking-tight">Your plan</h2><p id="planDateLabel" class="text-xs muted mt-1">A little progress goes a long way.</p></div>
+        <button id="addPlan" class="w-10 h-10 rounded-full bg-[#121316] text-white grid place-items-center text-2xl btn" aria-label="Add a plan">+</button>
+      </div>
+      <div id="planGrid" class="plan-grid grid grid-cols-2 gap-3 sm:gap-4"></div>
+      <div class="mt-5 surface card p-4 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-[#e8f7e9] grid place-items-center text-2xl shrink-0">💧</div>
+        <div class="flex-1"><p class="font-extrabold text-sm">Hydration check</p><p class="text-xs muted mt-1">Small sips, big difference</p><div class="progress-track mt-3"><div id="waterProgress" class="progress-fill" style="width:0%"></div></div></div>
+        <div class="text-right"><p id="waterCount" class="font-extrabold">0/8</p><button id="waterAdd" class="text-xs font-bold mt-1 underline">+ glass</button></div>
+      </div>
+    </section>
+
+    <section id="libraryView" class="hidden">
+      <div class="mb-5"><h2 class="text-2xl font-extrabold">Move library</h2><p class="muted text-sm mt-1">A little inspiration for your next session.</p></div>
+      <div class="flex gap-2 overflow-x-auto pb-3 mb-3" id="libraryFilters"></div>
+      <div id="libraryGrid" class="grid grid-cols-2 gap-3"></div>
+    </section>
+
+    <section id="statsView" class="hidden">
+      <div class="mb-5"><h2 class="text-2xl font-extrabold">Your progress</h2><p class="muted text-sm mt-1">Consistency over perfection.</p></div>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="surface card p-5"><p class="muted text-xs font-semibold">Active minutes</p><p id="statMinutes" class="text-3xl font-extrabold mt-2">0</p><p class="text-xs muted mt-1">planned this week</p></div>
+        <div class="surface card p-5"><p class="muted text-xs font-semibold">Completed</p><p id="statCompleted" class="text-3xl font-extrabold mt-2">0%</p><p class="text-xs muted mt-1">of your sessions</p></div>
+        <div class="surface card p-5"><p class="muted text-xs font-semibold">Current streak</p><p id="statStreak" class="text-3xl font-extrabold mt-2">0 🔥</p><p class="text-xs muted mt-1">days showing up</p></div>
+        <div class="surface card p-5"><p class="muted text-xs font-semibold">Hydration</p><p id="statWater" class="text-3xl font-extrabold mt-2">0/8</p><p class="text-xs muted mt-1">glasses today</p></div>
+      </div>
+      <div class="surface card p-5"><div class="flex justify-between items-center mb-5"><h3 class="font-extrabold">Weekly activity</h3><span class="text-xs muted">Sessions</span></div><div id="weekBars" class="flex items-end justify-between gap-2 h-36"></div></div>
+      <div class="mt-4 surface card p-5"><h3 class="font-extrabold mb-3">Recent sessions</h3><div id="recentLogs" class="space-y-3"></div></div>
+    </section>
+
+    <section id="profileView" class="hidden">
+      <div class="mb-5"><h2 class="text-2xl font-extrabold">You & settings</h2><p class="muted text-sm mt-1">Make Daily feel like yours.</p></div>
+      <div class="surface card p-5 flex items-center gap-4 mb-4"><div id="settingsAvatar" class="w-16 h-16 rounded-2xl bg-[#e7e4ff] grid place-items-center text-3xl overflow-hidden">🧑🏻</div><div class="flex-1 min-w-0"><p id="settingsName" class="font-extrabold text-lg truncate">Alex Morgan</p><p id="settingsEmail" class="muted text-sm">Your personal routine space</p></div><button id="editProfile" class="text-sm font-bold underline">Edit</button></div>
+      <div class="surface card divide-y divide-[var(--line)]">
+        <div class="p-4 flex items-center justify-between gap-3"><div><p class="font-bold text-sm">Dark appearance</p><p class="text-xs muted mt-1">Easy on the eyes at night</p></div><button id="darkToggle" class="w-12 h-7 rounded-full bg-gray-300 p-1 transition"><span id="darkKnob" class="block w-5 h-5 bg-white rounded-full shadow transition"></span></button></div>
+        <div class="p-4 flex items-center justify-between gap-3"><div><p class="font-bold text-sm">Workout reminders</p><p class="text-xs muted mt-1">Allow browser notifications</p></div><button id="notifyToggle" class="text-xs font-bold border border-[var(--line)] rounded-full px-3 py-2">Enable</button></div>
+        <button id="exportData" class="p-4 w-full text-left flex justify-between items-center"><div><p class="font-bold text-sm">Export your data</p><p class="text-xs muted mt-1">Download a JSON backup</p></div><span>↗</span></button>
+        <button id="importButton" class="p-4 w-full text-left flex justify-between items-center"><div><p class="font-bold text-sm">Import backup</p><p class="text-xs muted mt-1">Restore a previous export</p></div><span>↗</span></button>
+        <input id="importFile" type="file" accept="application/json,.json" class="hidden">
+        <button id="resetData" class="p-4 w-full text-left flex justify-between items-center text-red-500"><div><p class="font-bold text-sm">Reset all data</p><p class="text-xs mt-1 opacity-75">Start fresh on this device</p></div><span>↗</span></button>
+      </div>
+      <p class="text-center text-xs muted mt-5">Your data stays in this browser on this device.</p>
+    </section>
+  </main>
+</div>
+
+<nav class="fixed z-30 bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[440px] dock bg-[#121316] text-white rounded-full p-2 safe-bottom">
+  <div class="grid grid-cols-4 gap-1">
+    <button class="nav-btn rounded-full py-3 flex flex-col items-center gap-1 bg-white/15" data-view="homeView"><span>⌂</span><span class="text-[10px] font-semibold">Home</span></button>
+    <button class="nav-btn rounded-full py-3 flex flex-col items-center gap-1 opacity-65" data-view="libraryView"><span>✳</span><span class="text-[10px] font-semibold">Explore</span></button>
+    <button class="nav-btn rounded-full py-3 flex flex-col items-center gap-1 opacity-65" data-view="statsView"><span>▥</span><span class="text-[10px] font-semibold">Progress</span></button>
+    <button class="nav-btn rounded-full py-3 flex flex-col items-center gap-1 opacity-65" data-view="profileView"><span>◉</span><span class="text-[10px] font-semibold">Profile</span></button>
+  </div>
+</nav>
+
+<div id="modalRoot"></div><div id="toastRoot" class="fixed top-4 left-1/2 -translate-x-1/2 z-[80] w-max max-w-[90vw]"></div>
+<script>
+(() => {
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parseDate = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d,12); };
+const today = new Date(); const todayISO = iso(today);
+const uid = () => Math.random().toString(36).slice(2,10);
+const defaultState = () => ({
+ profile:{name:'Alex Morgan',avatar:'',emoji:'🧑🏻'}, challenge:{title:'Move your body',deadline:'09:00',reminder:false,done:{}},
+ streak:5,dark:false,notifications:false,water:{}, selectedDate:todayISO,
+ tasks:[
+ {id:uid(),title:'Yoga Group',date:todayISO,time:'07:30',duration:45,tag:'Medium',category:'Yoga',color:'amber',location:'Living Room',partner:'Maya Chen',emoji:'🧘🏻‍♀️',done:false},
+ {id:uid(),title:'Balance',date:todayISO,time:'09:15',duration:15,tag:'Light',category:'Stretch',color:'blue',location:'A5 room',partner:'',emoji:'🧘',done:false},
+ {id:uid(),title:'Water break',date:todayISO,time:'11:00',duration:5,tag:'Habit',category:'Habit',color:'pink',location:'Anywhere',partner:'',emoji:'💧',done:false},
+ {id:uid(),title:'Evening walk',date:iso(new Date(today.getFullYear(),today.getMonth(),today.getDate()+1,12)),time:'18:00',duration:30,tag:'Light',category:'Cardio',color:'blue',location:'Outside',partner:'',emoji:'🚶',done:false}
+ ],logs:[]
+});
+let state;
+try { state=JSON.parse(localStorage.getItem('dailyFitnessState')) || defaultState(); } catch(e){state=defaultState();}
+if(!state.profile) state=defaultState();
+if(!state.challenge.done)state.challenge.done={}; if(!state.water)state.water={}; if(!state.logs)state.logs=[];
+const save=()=>localStorage.setItem('dailyFitnessState',JSON.stringify(state));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const colorClass=c=>({amber:'bg-[#ffcf73]',blue:'bg-[#bfdbfe]',pink:'bg-[#ffb8eb]',lav:'bg-[#c5c4f7]',green:'bg-[#c9edcb]'}[c]||'bg-[#ffcf73]');
+const dateLabel=(s,opts={weekday:'short',month:'short',day:'numeric'})=>parseDate(s).toLocaleDateString('en-US',opts);
+function toast(msg){$('#toastRoot').innerHTML=`<div class="toast bg-[#121316] text-white px-4 py-3 rounded-2xl text-sm font-semibold shadow-xl">${esc(msg)}</div>`;setTimeout(()=>$('#toastRoot').innerHTML='',2600);}
+function avatarMarkup(){return state.profile.avatar?`<img src="${state.profile.avatar}" class="w-full h-full object-cover" alt="Profile avatar">`:esc(state.profile.emoji||'🧑🏻');}
+function renderHeader(){
+ const h=new Date().getHours();$('#greeting').textContent=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,';
+ $('#userNameHead').textContent=state.profile.name;$('#todayLabel').textContent='Today · '+dateLabel(todayISO,{month:'short',day:'numeric'});
+ $('#avatar').innerHTML=avatarMarkup();$('#settingsAvatar').innerHTML=avatarMarkup();$('#settingsName').textContent=state.profile.name;
+ $('#challengeTitle').textContent=state.challenge.title;$('#challengeSubtitle').textContent=`Complete a workout before ${formatTime(state.challenge.deadline)}`;
+ const done=!!state.challenge.done[state.selectedDate];$('#challengeCheck').innerHTML=done?'✓ Challenge completed':'Mark complete <span class="ml-1">↗</span>';
+ $('#challengeCheck').classList.toggle('bg-green-700',done);$('#streakBadge').textContent=`🔥 ${state.streak||0}-day streak`;
+}
+function formatTime(t){if(!t)return 'any time';let [h,m]=t.split(':').map(Number);return `${(h%12)||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;}
+function renderCalendar(){
+ const start=new Date(today);start.setDate(today.getDate()-today.getDay());
+ const dates=Array.from({length:7},(_,i)=>{let d=new Date(start);d.setDate(start.getDate()+i);return iso(d);});
+ $('#calendarStrip').innerHTML=dates.map(d=>{
+ let active=d===state.selectedDate,has=state.tasks.some(t=>t.date===d);
+ return `<button class="day-pill ${active?'active':'surface'} rounded-2xl py-3 px-2 flex flex-col items-center gap-2 btn shrink-0" data-date="${d}"><span class="text-[10px] font-bold ${active?'day-muted':'muted'}">${dateLabel(d,{weekday:'short'}).toUpperCase()}</span><span class="text-lg font-extrabold leading-none">${parseDate(d).getDate()}</span><span class="w-1.5 h-1.5 rounded-full ${has?(active?'bg-[#ffcf73]':'bg-[#8d8bf1]'):'bg-transparent'}"></span></button>`;
+ }).join('');
+ $$('#calendarStrip [data-date]').forEach(b=>b.onclick=()=>{state.selectedDate=b.dataset.date;save();renderAll();});
+ $('#planDateLabel').textContent=state.selectedDate===todayISO?'A little progress goes a long way.':dateLabel(state.selectedDate,{weekday:'long',month:'short',day:'numeric'});
+}
+function renderPlans(){
+ const tasks=state.tasks.filter(t=>t.date===state.selectedDate).sort((a,b)=>a.time.localeCompare(b.time));
+ if(!tasks.length){$('#planGrid').innerHTML=`<div class="col-span-2 surface card p-8 text-center"><div class="text-4xl mb-3">🌱</div><h3 class="font-extrabold">A little room to breathe</h3><p class="text-sm muted mt-2 mb-4">No plans for this day yet. Add something that feels good.</p><button class="bg-[#121316] text-white rounded-full px-5 py-3 text-sm font-bold" id="emptyAdd">+ Add a session</button></div>`;$('#emptyAdd').onclick=()=>openTask();return;}
+ $('#planGrid').innerHTML=tasks.map((t,i)=>{
+ const tall=i===0;const bg=colorClass(t.color);
+ return `<article class="plan-card ${tall?'tall':''} ${bg} card clay p-4 sm:p-5 flex flex-col ${t.done?'done':''}" data-task="${t.id}" tabindex="0">
+ <div class="flex items-start justify-between gap-2"><span class="text-[10px] font-extrabold tracking-wide bg-white/55 rounded-full px-2.5 py-1.5">${esc(t.tag||t.category)}</span><button class="check-circle btn task-check" data-id="${t.id}" aria-label="Mark ${esc(t.title)} complete">${t.done?'✓':''}</button></div>
+ <div class="mt-4 mb-auto"><div class="text-4xl sm:text-5xl mb-3">${esc(t.emoji||'✨')}</div><h3 class="routine-title text-xl sm:text-2xl font-extrabold leading-tight tracking-tight">${esc(t.title)}</h3><p class="text-xs font-semibold mt-2 opacity-65">${formatTime(t.time)} · ${Number(t.duration)||0} min</p><p class="text-xs mt-2 opacity-70">⌖ ${esc(t.location||'Anywhere')}</p></div>
+ ${t.partner?`<div class="flex items-center gap-2 mt-5 pt-3 border-t border-black/10"><div class="w-8 h-8 rounded-full bg-white/60 grid place-items-center text-sm">👩🏻</div><div class="min-w-0"><p class="text-[9px] opacity-60 font-bold">YOUR PARTNER</p><p class="text-xs font-extrabold truncate">${esc(t.partner)}</p></div></div>`:''}
+ <div class="flex gap-2 mt-4"><button class="task-open flex-1 text-xs font-bold rounded-full bg-white/55 py-2.5 btn" data-id="${t.id}">Details ↗</button>${t.category==='Stretch'||t.category==='Yoga'||t.category==='Cardio'?`<button class="timer-start text-xs font-bold rounded-full bg-[#121316] text-white px-3 py-2.5 btn" data-id="${t.id}" aria-label="Start timer">▶</button>`:''}</div>
+ </article>`;
+ }).join('');
+ $$('#planGrid .task-check').forEach(b=>b.onclick=e=>{e.stopPropagation();toggleTask(b.dataset.id);});
+ $$('#planGrid .task-open').forEach(b=>b.onclick=e=>{e.stopPropagation();openTaskDetails(b.dataset.id);});
+ $$('#planGrid .timer-start').forEach(b=>b.onclick=e=>{e.stopPropagation();startTimer(b.dataset.id);});
+ $$('#planGrid [data-task]').forEach(el=>{el.onclick=e=>{if(!e.target.closest('button'))openTaskDetails(el.dataset.task)};el.onkeydown=e=>{if(e.key==='Enter')openTaskDetails(el.dataset.task)}});
+}
+function toggleTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;t.done=!t.done;if(t.done){state.logs.unshift({title:t.title,date:t.date,duration:t.duration,category:t.category});toast('Session complete — nice work! ✨');}save();renderAll();}
+function challengeToggle(){const d=state.selectedDate;state.challenge.done[d]=!state.challenge.done[d];if(state.challenge.done[d]){state.streak=(state.streak||0)+1;toast('Challenge complete! You showed up 🔥');}else state.streak=Math.max(0,(state.streak||1)-1);save();renderAll();}
+function renderStats(){
+ const weekStart=new Date(today);weekStart.setDate(today.getDate()-today.getDay());const week=Array.from({length:7},(_,i)=>{let d=new Date(weekStart);d.setDate(d.getDate()+i);return iso(d)});
+ const tasks=state.tasks.filter(t=>week.includes(t.date));const complete=tasks.filter(t=>t.done).length;
+ $('#statMinutes').textContent=tasks.reduce((s,t)=>s+(+t.duration||0),0);$('#statCompleted').textContent=(tasks.length?Math.round(complete/tasks.length*100):0)+'%';$('#statStreak').textContent=(state.streak||0)+' 🔥';$('#statWater').textContent=(state.water[todayISO]||0)+'/8';
+ $('#weekBars').innerHTML=week.map((d,i)=>{let n=state.tasks.filter(t=>t.date===d&&t.done).length;let h=Math.max(9,Math.min(100,n*38));return `<div class="flex-1 flex flex-col items-center gap-2 h-full justify-end"><span class="text-[10px] muted">${n||''}</span><div class="w-full max-w-8 rounded-t-xl ${d===todayISO?'bg-[#c5c4f7]':'bg-[#ffcf73]'}" style="height:${h}%"></div><span class="text-[10px] muted">${dateLabel(d,{weekday:'short'}).slice(0,1)}</span></div>`}).join('');
+ const logs=state.logs.slice(0,5);$('#recentLogs').innerHTML=logs.length?logs.map(l=>`<div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-[#ffcf73] grid place-items-center">✓</div><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(l.title)}</p><p class="muted text-xs">${dateLabel(l.date,{month:'short',day:'numeric'})} · ${l.duration} min</p></div></div>`).join(''):'<p class="text-sm muted">Your completed sessions will show up here.</p>';
+}
+const libraryItems=[
+ {title:'Morning flow',cat:'Yoga',duration:20,emoji:'🧘',color:'amber',desc:'A gentle full-body wake-up flow.'},
+ {title:'Quick stretch',cat:'Stretch',duration:10,emoji:'🤸',color:'blue',desc:'Reset your shoulders, hips and back.'},
+ {title:'Bodyweight HIIT',cat:'Strength',duration:18,emoji:'💪',color:'pink',desc:'A short, equipment-free strength session.'},
+ {title:'Mindful breathing',cat:'Mindfulness',duration:5,emoji:'🌬️',color:'lav',desc:'Slow down and find your focus.'},
+ {title:'Easy walk',cat:'Cardio',duration:25,emoji:'🚶',color:'green',desc:'A comfortable walk at your own pace.'},
+ {title:'Balance basics',cat:'Stretch',duration:12,emoji:'🧍',color:'blue',desc:'Practice steady, controlled movement.'}
+];let libFilter='All';
+function renderLibrary(){
+ const cats=['All','Yoga','Stretch','Strength','Mindfulness','Cardio'];$('#libraryFilters').innerHTML=cats.map(c=>`<button data-cat="${c}" class="shrink-0 rounded-full px-4 py-2 text-xs font-bold ${libFilter===c?'bg-[#121316] text-white':'surface'}">${c}</button>`).join('');
+ $$('#libraryFilters button').forEach(b=>b.onclick=()=>{libFilter=b.dataset.cat;renderLibrary()});
+ const list=libraryItems.filter(x=>libFilter==='All'||x.cat===libFilter);
+ $('#libraryGrid').innerHTML=list.map((x,i)=>`<article class="${colorClass(x.color)} card clay p-4 min-h-48 flex flex-col"><div class="flex justify-between items-start"><span class="bg-white/60 rounded-full px-2 py-1 text-[10px] font-bold">${x.cat}</span><span class="text-xs font-bold">${x.duration}m</span></div><div class="text-4xl my-4">${x.emoji}</div><h3 class="font-extrabold">${x.title}</h3><p class="text-xs opacity-70 mt-1 mb-4">${x.desc}</p><button class="library-add mt-auto rounded-full bg-[#121316] text-white py-2.5 text-xs font-bold" data-title="${x.title}" data-cat="${x.cat}" data-duration="${x.duration}" data-emoji="${x.emoji}" data-color="${x.color}">Add to plan +</button></article>`).join('');
+ $$('#libraryGrid .library-add').forEach(b=>b.onclick=()=>openTask({title:b.dataset.title,category:b.dataset.cat,duration:+b.dataset.duration,emoji:b.dataset.emoji,color:b.dataset.color,date:state.selectedDate,tag:b.dataset.cat}));
+}
+function showView(view){
+ ['homeView','libraryView','statsView','profileView'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==view));
+ $$('.nav-btn').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('bg-white/15',active);b.classList.toggle('opacity-65',!active)});
+ if(view==='statsView')renderStats();if(view==='libraryView')renderLibrary();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function modal(content,wide=false){$('#modalRoot').innerHTML=`<div class="modal-backdrop fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" id="backdrop"><div class="sheet ${wide?'sm:max-w-lg':''} w-full sm:w-full sm:max-w-md bg-[var(--bg)] text-[var(--ink)] rounded-t-[28px] sm:rounded-[28px] p-5 sm:p-6 shadow-2xl" role="dialog" aria-modal="true">${content}</div></div>`;$('#backdrop').onclick=e=>{if(e.target.id==='backdrop')closeModal()};$('#modalRoot').querySelectorAll('[data-close]').forEach(b=>b.onclick=closeModal);}
+function closeModal(){ $('#modalRoot').innerHTML=''; if(timerInterval){clearInterval(timerInterval);timerInterval=null;} }
+function field(label,name,value,type='text',extra=''){return `<label class="block mb-4"><span class="block text-xs font-bold muted mb-2">${label}</span><input name="${name}" type="${type}" value="${esc(value??'')}" ${extra} class="w-full rounded-2xl border border-[var(--line)] bg-[var(--card)] px-4 py-3 text-sm"></label>`}
+function selectField(label,name,value,options){return `<label class="block mb-4"><span class="block text-xs font-bold muted mb-2">${label}</span><select name="${name}" class="w-full rounded-2xl border border-[var(--line)] bg-[var(--card)] px-4 py-3 text-sm">${options.map(o=>`<option ${o===value?'selected':''}>${o}</option>`).join('')}</select></label>`}
+function openTask(seed={}){
+ const t={title:'',date:state.selectedDate,time:'07:30',duration:30,tag:'Medium',category:'Yoga',color:'amber',location:'Living Room',partner:'',emoji:'🧘',...seed};
+ modal(`<div class="flex items-center justify-between mb-5"><div><p class="text-xs muted font-bold">MAKE IT HAPPEN</p><h2 class="text-2xl font-extrabold mt-1">Add to your plan</h2></div><button data-close class="w-9 h-9 rounded-full surface">✕</button></div>
+ <form id="taskForm">${field('SESSION NAME','title',t.title,'text','required placeholder="e.g. Evening stretch"')}
+ <div class="grid grid-cols-2 gap-3">${field('DATE','date',t.date,'date','required')}${field('START TIME','time',t.time,'time','required')}</div>
+ <div class="grid grid-cols-2 gap-3">${field('DURATION (MIN)','duration',t.duration,'number','min="1" max="600" required')}${selectField('DIFFICULTY','tag',t.tag,['Light','Medium','Challenging','Habit'])}</div>
+ <div class="grid grid-cols-2 gap-3">${selectField('CATEGORY','category',t.category,['Yoga','Stretch','Strength','Cardio','Mindfulness','Habit'])}${selectField('CARD COLOR','color',t.color,['amber','blue','pink','lav','green'])}</div>
+ ${field('LOCATION','location',t.location,'text','placeholder="Anywhere"')}${field('PARTNER / TRAINER (OPTIONAL)','partner',t.partner,'text','placeholder="Name"')}
+ <div class="flex gap-3 pt-1"><button type="button" data-close class="surface rounded-full py-3 flex-1 text-sm font-bold">Cancel</button><button class="rounded-full bg-[#121316] text-white py-3 flex-1 text-sm font-bold">Save session ↗</button></div></form>`,true);
+ $('#taskForm').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);const val=Object.fromEntries(f.entries());const id=seed.id||uid();const task={...t,...val,id,duration:Math.max(1,+val.duration||30),done:!!seed.done,emoji:t.emoji||'✨'};const ix=state.tasks.findIndex(x=>x.id===id);if(ix>=0)state.tasks[ix]=task;else state.tasks.push(task);state.selectedDate=task.date;save();closeModal();renderAll();toast(ix>=0?'Session updated':'Session added to your plan');};
+}
+function openTaskDetails(id){
+ const t=state.tasks.find(x=>x.id===id);if(!t)return;
+ modal(`<div class="flex justify-between items-start"><div class="${colorClass(t.color)} rounded-2xl p-4 text-4xl">${esc(t.emoji||'✨')}</div><button data-close class="w-9 h-9 rounded-full surface">✕</button></div>
+ <p class="text-xs muted font-bold mt-5">${esc(t.category)} · ${esc(t.tag)}</p><h2 class="text-3xl font-extrabold mt-1">${esc(t.title)}</h2><p class="muted text-sm mt-2">${dateLabel(t.date,{weekday:'long',month:'long',day:'numeric'})}</p>
+ <div class="grid grid-cols-2 gap-3 my-5"><div class="surface card p-4"><p class="text-xs muted">START TIME</p><p class="font-extrabold mt-1">${formatTime(t.time)}</p></div><div class="surface card p-4"><p class="text-xs muted">DURATION</p><p class="font-extrabold mt-1">${t.duration} minutes</p></div></div>
+ <div class="surface card p-4 mb-5"><p class="text-xs muted">LOCATION</p><p class="font-bold mt-1">⌖ ${esc(t.location||'Anywhere')}</p>${t.partner?`<p class="text-sm mt-3">Partner: <b>${esc(t.partner)}</b></p>`:''}</div>
+ <div class="flex gap-2"><button id="detailDone" class="flex-1 rounded-full bg-[#121316] text-white py-3 text-sm font-bold">${t.done?'Mark as not done':'✓ Mark complete'}</button><button id="detailEdit" class="flex-1 surface rounded-full py-3 text-sm font-bold">Edit</button></div>
+ <button id="detailDelete" class="w-full text-red-500 text-sm font-bold mt-4 py-2">Delete session</button>`);
+ $('#detailDone').onclick=()=>{closeModal();toggleTask(id)};$('#detailEdit').onclick=()=>{closeModal();openTask(t)};$('#detailDelete').onclick=()=>{state.tasks=state.tasks.filter(x=>x.id!==id);save();closeModal();renderAll();toast('Session deleted')};
+}
+function openChallenge(){
+ modal(`<div class="flex justify-between items-center mb-5"><div><p class="text-xs muted font-bold">YOUR DAILY PROMISE</p><h2 class="text-2xl font-extrabold mt-1">Daily challenge</h2></div><button data-close class="w-9 h-9 rounded-full surface">✕</button></div>
+ <form id="challengeForm">${field('CHALLENGE GOAL','title',state.challenge.title,'text','required placeholder="e.g. Move your body"')}${field('DEADLINE TIME','deadline',state.challenge.deadline,'time','required')}
+ <label class="flex items-center justify-between gap-3 surface card p-4 mb-5"><div><p class="font-bold text-sm">Reminder notification</p><p class="muted text-xs mt-1">Ask your browser to remind you</p></div><input type="checkbox" name="reminder" class="w-5 h-5 accent-black" ${state.challenge.reminder?'checked':''}></label>
+ <button class="w-full rounded-full bg-[#121316] text-white py-3.5 text-sm font-bold">Save challenge</button></form>`);
+ $('#challengeForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target);state.challenge.title=f.get('title');state.challenge.deadline=f.get('deadline');state.challenge.reminder=f.get('reminder')==='on';save();closeModal();renderAll();toast('Challenge updated');if(state.challenge.reminder)enableNotifications(true)};
+}
+function openProfile(){
+ modal(`<div class="flex justify-between items-center mb-5"><div><p class="text-xs muted font-bold">A LITTLE ABOUT YOU</p><h2 class="text-2xl font-extrabold mt-1">Your profile</h2></div><button data-close class="w-9 h-9 rounded-full surface">✕</button></div>
+ <form id="profileForm"><div class="flex items-center gap-4 mb-5"><div id="profilePreview" class="w-16 h-16 rounded-2xl bg-[#e7e4ff] grid place-items-center text-3xl overflow-hidden">${avatarMarkup()}</div><label class="text-sm font-bold underline cursor-pointer">Upload avatar<input id="avatarFile" type="file" accept="image/*" class="hidden"></label><button id="removeAvatar" type="button" class="text-xs muted">Remove</button></div>
+ ${field('YOUR NAME','name',state.profile.name,'text','required maxlength="50"')}
+ <label class="block mb-5"><span class="block text-xs font-bold muted mb-2">OR PICK AN AVATAR</span><div class="flex gap-2">${['🧑🏻','👩🏻','🧑🏽','👨🏽','🧘🏻‍♀️','🐻'].map(e=>`<button type="button" data-emoji="${e}" class="emoji-choice w-10 h-10 rounded-xl surface text-xl">${e}</button>`).join('')}</div></label>
+ <button class="w-full rounded-full bg-[#121316] text-white py-3.5 text-sm font-bold">Save profile</button></form>`);
+ let chosen=state.profile.emoji;$('#avatarFile').onchange=e=>{const file=e.target.files[0];if(!file)return;if(file.size>1.5*1024*1024){toast('Choose an image under 1.5 MB');return;}const reader=new FileReader();reader.onload=()=>{state.profile.avatar=reader.result;$('#profilePreview').innerHTML=avatarMarkup()};reader.readAsDataURL(file)};
+ $$('#modalRoot [data-emoji]').forEach(b=>b.onclick=()=>{chosen=b.dataset.emoji;state.profile.emoji=chosen;state.profile.avatar='';$('#profilePreview').innerHTML=avatarMarkup();$$('#modalRoot [data-emoji]').forEach(x=>x.classList.toggle('ring-2',x===b))});
+ $('#removeAvatar').onclick=()=>{state.profile.avatar='';$('#profilePreview').innerHTML=avatarMarkup()};
+ $('#profileForm').onsubmit=e=>{e.preventDefault();state.profile.name=new FormData(e.target).get('name').trim()||'Friend';save();closeModal();renderAll();toast('Profile saved')};
+}
+let timerInterval=null;
+function startTimer(id){
+ const t=state.tasks.find(x=>x.id===id);if(!t)return;let seconds=Math.max(1,+t.duration||1)*60;
+ modal(`<div class="flex justify-between items-center"><div><p class="text-xs muted font-bold">TAKE A MOMENT</p><h2 class="text-2xl font-extrabold mt-1">${esc(t.title)}</h2></div><button data-close class="w-9 h-9 rounded-full surface">✕</button></div>
+ <div class="${colorClass(t.color)} card clay text-center py-10 my-6"><div class="text-5xl mb-4">${esc(t.emoji||'⏱️')}</div><p id="timerDisplay" class="text-5xl font-extrabold tabular-nums">${String(Math.floor(seconds/60)).padStart(2,'0')}:00</p><p id="timerCaption" class="text-xs font-bold mt-3 opacity-60">READY WHEN YOU ARE</p></div>
+ <div class="flex gap-3"><button id="timerPause" class="surface rounded-full py-3 flex-1 text-sm font-bold">Pause</button><button id="timerFinish" class="rounded-full bg-[#121316] text-white py-3 flex-1 text-sm font-bold">Finish session</button></div>`);
+ let running=true;$('#timerPause').onclick=()=>{running=!running;$('#timerPause').textContent=running?'Pause':'Resume';$('#timerCaption').textContent=running?'YOU’VE GOT THIS':'PAUSED';};
+ timerInterval=setInterval(()=>{if(!running)return;seconds--;if(seconds<=0){clearInterval(timerInterval);timerInterval=null;running=false;$('#timerDisplay').textContent='00:00';$('#timerCaption').textContent='TIME’S UP — NICE WORK!';beep();return;}$('#timerDisplay').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')},1000);
+ $('#timerFinish').onclick=()=>{if(timerInterval){clearInterval(timerInterval);timerInterval=null;}closeModal();if(!t.done)toggleTask(id);toast('Timer finished — great effort!')};
+}
+function beep(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=660;g.gain.value=.07;o.start();o.stop(c.currentTime+.35);}catch(e){}}
+function openSearch(){
+ modal(`<div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-extrabold">Quick search</h2><button data-close class="w-9 h-9 rounded-full surface">✕</button></div>
+ <input id="searchInput" placeholder="Search plans, workouts, logs…" class="w-full rounded-2xl border border-[var(--line)] bg-[var(--card)] px-4 py-3.5 text-sm mb-4" autofocus><div id="searchResults" class="space-y-2"></div>`,true);
+ const render=()=>{const q=$('#searchInput').value.toLowerCase();const arr=[...state.tasks.map(t=>({title:t.title,sub:`${dateLabel(t.date,{month:'short',day:'numeric'})} · ${t.category}`,id:t.id,type:'task'})),...libraryItems.map(t=>({title:t.title,sub:`Workout library · ${t.duration} min`,type:'library',item:t})),...state.logs.map(t=>({title:t.title,sub:`Completed · ${dateLabel(t.date,{month:'short',day:'numeric'})}`,type:'log'}))].filter(x=>(x.title+' '+x.sub).toLowerCase().includes(q)).slice(0,12);
+ $('#searchResults').innerHTML=arr.length?arr.map((x,i)=>`<button class="search-result w-full surface rounded-2xl p-3 text-left flex justify-between items-center gap-3" data-index="${i}"><div><p class="font-bold text-sm">${esc(x.title)}</p><p class="text-xs muted mt-1">${esc(x.sub)}</p></div><span>↗</span></button>`).join(''):'<p class="text-sm muted p-3">No matches yet. Try another keyword.</p>';
+ $$('#searchResults .search-result').forEach((b,i)=>b.onclick=()=>{const x=arr[i];closeModal();if(x.type==='task'){state.selectedDate=state.tasks.find(t=>t.id===x.id).date;renderAll();openTaskDetails(x.id)}else if(x.type==='library')openTask({title:x.item.title,category:x.item.cat,duration:x.item.duration,emoji:x.item.emoji,color:x.item.color,tag:x.item.cat,date:state.selectedDate})});
+ };$('#searchInput').oninput=render;render();setTimeout(()=>$('#searchInput')?.focus(),80);
+}
+async function enableNotifications(fromChallenge=false){
+ if(!('Notification' in window)){toast('Notifications are not supported in this browser');return;}
+ try{const p=await Notification.requestPermission();state.notifications=p==='granted';save();renderAll();if(state.notifications){new Notification('Daily reminders enabled',{body:'You can keep showing up, one session at a time.'});toast('Notifications enabled');}else toast('Notification permission was not granted');}catch(e){toast('Could not enable notifications');}
+}
+function renderHydration(){const n=state.water[todayISO]||0;$('#waterCount').textContent=n+'/8';$('#waterProgress').style.width=(n/8*100)+'%';}
+function renderAll(){document.body.classList.toggle('dark',!!state.dark);$('#darkKnob').style.transform=state.dark?'translateX(20px)':'translateX(0)';$('#darkToggle').classList.toggle('bg-[#121316]',!!state.dark);$('#darkToggle').classList.toggle('bg-gray-300',!state.dark);$('#notifyToggle').textContent=state.notifications?'Enabled':'Enable';renderHeader();renderCalendar();renderPlans();renderHydration();renderStats();save();}
+$('#profileQuick').onclick=openProfile;$('#editProfile').onclick=openProfile;$('#searchOpen').onclick=openSearch;$('#headerAdd').onclick=()=>openTask();$('#addPlan').onclick=()=>openTask();$('#challengeCard').onclick=e=>{if(!e.target.closest('button'))openChallenge()};$('#challengeCard').onkeydown=e=>{if(e.key==='Enter')openChallenge()};$('#challengeEdit').onclick=e=>{e.stopPropagation();openChallenge()};$('#challengeCheck').onclick=e=>{e.stopPropagation();challengeToggle()};$('#jumpToday').onclick=()=>{state.selectedDate=todayISO;renderAll()};$('#waterAdd').onclick=()=>{state.water[todayISO]=Math.min(8,(state.water[todayISO]||0)+1);save();renderHydration();renderStats();toast(state.water[todayISO]===8?'Hydration goal reached! 💧':'Glass logged')};
+$$('.nav-btn').forEach(b=>b.onclick=()=>showView(b.dataset.view));$('#darkToggle').onclick=()=>{state.dark=!state.dark;save();renderAll()};$('#notifyToggle').onclick=()=>enableNotifications();$('#exportData').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='daily-fitness-backup.json';a.click();URL.revokeObjectURL(a.href);toast('Backup exported')};
+$('#importButton').onclick=()=>$('#importFile').click();$('#importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const incoming=JSON.parse(r.result);if(!incoming.profile||!Array.isArray(incoming.tasks))throw new Error();state=incoming;save();renderAll();toast('Backup restored');}catch(err){toast('That file is not a valid Daily backup');}};r.readAsText(f);e.target.value='';};
+$('#resetData').onclick=()=>{modal(`<div class="text-center py-3"><div class="text-4xl mb-3">🫧</div><h2 class="text-2xl font-extrabold">Start fresh?</h2><p class="muted text-sm mt-2 mb-6">This clears routines and progress saved in this browser.</p><div class="flex gap-3"><button data-close class="surface rounded-full py-3 flex-1 font-bold text-sm">Keep my data</button><button id="confirmReset" class="bg-red-500 text-white rounded-full py-3 flex-1 font-bold text-sm">Reset</button></div></div>`);$('#confirmReset').onclick=()=>{state=defaultState();save();closeModal();renderAll();showView('homeView');toast('Fresh start, you’ve got this')};};
+$('#searchOpen').title='Search plans and workouts';
+renderAll();
+})();
+</script>
+</body>
+</html>
